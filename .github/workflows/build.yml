@@ -10,7 +10,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v3
 
     - name: Install dependencies
       run: |
@@ -40,7 +40,7 @@ jobs:
         make package/kernel/linux/modules/netfilter/kmod-nf-queue/compile V=s
 
     - name: Upload packages
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: nfqueue-modules-x86_64-6.6.84
         path: openwrt/bin/packages/x86_64/kernel/*.ipk
