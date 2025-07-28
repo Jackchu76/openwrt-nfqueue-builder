@@ -1,0 +1,46 @@
+name: Build NFQUEUE Modules for OpenWrt 6.6.84 x86_64
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Compile NFQUEUE Modules
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y build-essential libncurses5-dev gawk git gettext unzip file libssl-dev wget python3 python3-distutils qemu-utils
+
+    - name: Clone OpenWrt source
+      run: |
+        git clone https://github.com/openwrt/openwrt.git
+        cd openwrt
+        git checkout v24.10.0
+        ./scripts/feeds update -a
+        ./scripts/feeds install -a
+
+    - name: Setup kernel config
+      run: |
+        cd openwrt
+        cp ../.github/build.config .config
+        make defconfig
+
+    - name: Compile kernel modules
+      run: |
+        cd openwrt
+        make package/kernel/linux/compile V=s
+        make package/kernel/linux/modules/netfilter/kmod-nfnetlink/compile V=s
+        make package/kernel/linux/modules/netfilter/kmod-nfnetlink-queue/compile V=s
+        make package/kernel/linux/modules/netfilter/kmod-nf-queue/compile V=s
+
+    - name: Upload packages
+      uses: actions/upload-artifact@v3
+      with:
+        name: nfqueue-modules-x86_64-6.6.84
+        path: openwrt/bin/packages/x86_64/kernel/*.ipk
